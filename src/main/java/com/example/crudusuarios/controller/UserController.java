@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,12 +27,26 @@ public class UserController {
         return userRepository.findAll();
     }
 
-    @GetMapping(path = "/email/{id_user}")
+    /*
+   @GetMapping(path = "/id/{id_user}")
     public UserSearchDTO searchUserEmailById(@PathVariable("id_user") long id_user){
-        return userRepository.buscarEmailById(id_user);
+       UserSearchDTO user =  userRepository.buscarEmailById(id_user);
+        if (user == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado");
+        }
+        return user;
+    }*/
 
+    //Permiso de un admin este permiso no lo pueden tener el saff o el view
+    @GetMapping("/{id_user}")
+    public ResponseEntity<UserModel> getUserById(@PathVariable("id_user") long id_user){
+        return userRepository.findById(id_user)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
+    //Permiso de un staff
 
+    //Permiso de Admin
     @PostMapping("/saveuser")
     public UserModel crearUsuario(@RequestBody UserModel user){
         return userRepository.save(user);
@@ -46,18 +61,19 @@ public class UserController {
 
         if(optionalUserModel.isPresent()) {
             UserModel mdlUser = optionalUserModel.get(); //mdlUser es como un apodo digamos o una variable UserModel para hacer mas corto ese optionalUserModel.get()
-            mdlUser.setFirst_name(user.getFirst_name());
-            mdlUser.setLast_name(user.getLast_name());
+            mdlUser.setFirstName(user.getFirstName());
+            mdlUser.setLastName(user.getLastName());
             mdlUser.setEmail(user.getEmail());
-            mdlUser.getState();
+            mdlUser.setState(user.getState());
 
             userRepository.save(mdlUser);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(mdlUser);
         }else {
             return ResponseEntity.notFound().build();
         }
     }
 
+    //Permiso de un staff
     @PatchMapping(path = "/updatedatauser/{id_user}")
     public ResponseEntity<?> actualizarDatoUser(@PathVariable Long id_user, Map<String, Object> updates) {
         Optional<UserModel> optionalUserModel = userRepository.findById(id_user);
@@ -71,7 +87,7 @@ public class UserController {
         UserModel user = optionalUserModel.get();
 
         if(updates.containsKey("first_name")){
-            user.setFirst_name(updates.get("first_name").toString());
+            user.setFirstName(updates.get("first_name").toString());
         }
 
         userRepository.save(user);
@@ -81,5 +97,12 @@ public class UserController {
         response.put("user",user);
 
         return ResponseEntity.ok(response);
+    }
+
+    //Permiso de un admin:
+    @DeleteMapping("/dltUser/{id_user}")
+    public ResponseEntity<String> deleteUser(@PathVariable long id_user){
+        userRepository.deleteById(id_user);
+        return ResponseEntity.ok().build();
     }
 }

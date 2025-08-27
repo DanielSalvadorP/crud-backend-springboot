@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface UserRepository extends JpaRepository<UserModel, Long> {
 
-    @Query("SELECT new com.example.crudusuarios.model.UserSearchDTO(u.id_user, u.first_name, u.last_name, u.email, u.state) " +
-            "FROM UserModel u WHERE u.id_user = :idUser")
-    UserSearchDTO buscarEmailById(@Param("idUser") long idUser);
+    Optional<UserModel> findById(long idUser);
 }
