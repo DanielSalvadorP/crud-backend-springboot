@@ -1,6 +1,7 @@
 package com.example.crudusuarios.controller;
 
 
+import com.example.crudusuarios.Service.UserService;
 import com.example.crudusuarios.model.UserModel;
 import com.example.crudusuarios.model.UserSearchDTO;
 import com.example.crudusuarios.repository.UserRepository;
@@ -21,6 +22,11 @@ import java.util.Optional;
 public class UserController {
     @Autowired
     private UserRepository userRepository;
+    private UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public List<UserModel> getAllUsers(){
@@ -36,6 +42,16 @@ public class UserController {
         }
         return user;
     }*/
+
+    @GetMapping(path = "/state/{state}")
+    public List<UserModel> findUserByState(@PathVariable String state){
+        return userRepository.findByState(state);
+    }
+
+    @GetMapping("/resumenusers")
+    public Map<String, Long> resumenUsersData(){
+        return userService.resumenUsuarios();
+    }
 
     //Permiso de un admin este permiso no lo pueden tener el saff o el view
     @GetMapping("/{id_user}")
